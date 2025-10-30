@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digital Lamp Lighting Ceremony</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: radial-gradient(circle at center, #1a1a1a 60%, #000);
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: background 2s ease;
+        }
+
+        h1 {
+            font-size: 2.3rem;
+            text-shadow: 0 0 10px gold;
+            margin-bottom: 20px;
+            text-align: center;
+            transition: opacity 1s ease;
+        }
+
+        .lamp-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 100px);
+            grid-gap: 30px;
+            justify-content: center;
+            transition: opacity 1s ease;
+        }
+
+        .lamp {
+            position: relative;
+            width: 80px;
+            height: 120px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .lamp:hover {
+            transform: scale(1.1);
+        }
+
+        .base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 25px;
+            background: #5a3e1b;
+            border-radius: 0 0 60px 60px;
+            box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.6);
+        }
+
+        .flame {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 40px;
+            background: radial-gradient(circle at 30% 30%, #ffec85, #ff9b00, #ff4500);
+            border-radius: 50%;
+            opacity: 0;
+            filter: blur(1px);
+            transition: opacity 0.8s ease;
+        }
+
+        .flame.glow {
+            opacity: 1;
+            animation: flicker 0.15s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0% {
+                transform: translateX(-50%) scale(1) rotate(-1deg);
+                opacity: 0.9;
+            }
+
+            50% {
+                transform: translateX(-50%) scale(1.1) rotate(1deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(-50%) scale(0.95) rotate(-1deg);
+                opacity: 0.8;
+            }
+        }
+
+        .team-label {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: #ffecb3;
+            width: 110px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .message {
+            margin-top: 30px;
+            font-size: 1.6rem;
+            opacity: 0;
+            transition: opacity 2s ease;
+            text-align: center;
+        }
+
+        .message.show {
+            opacity: 1;
+            text-shadow: 0 0 15px #ffd700, 0 0 30px #ff8c00;
+        }
+
+        body.lit {
+            background: radial-gradient(circle at center, #ffd700 10%, #000 90%);
+        }
+
+        /* Centered logo section */
+        .logos {
+            display: none;
+            position: absolute;
+            inset: 0;
+            justify-content: center;
+            align-items: center;
+            gap: 60px;
+        }
+
+        .logos.show {
+            display: flex;
+            animation: fadeIn 2s ease forwards;
+        }
+
+        .logos img {
+            width: 200px;
+            opacity: 0;
+            animation: fadeIn 2s ease forwards;
+        }
+
+        .p-logo {
+            position: absolute;
+            left: 50px;
+            bottom: 50px;
+            width: 180px;
+            opacity: 0;
+            animation: fadeIn 2s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Confetti style */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: gold;
+            top: 50%;
+            left: 50%;
+            opacity: 0.8;
+            border-radius: 50%;
+            animation: confettiFall 2s ease-out forwards;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translate(calc(-50vw + var(--x) * 1px),
+                        calc(50vh + var(--y) * 1px)) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1 id="title">💡 Digital Lamp Lighting Ceremony 💡</h1>
+    <div class="lamp-grid" id="lampGrid"></div>
+    <div class="message" id="message">✨ All Lamps Lit — Hackathon Begins! 🚀</div>
+
+    <!-- Logos -->
+    <div class="logos" id="logos">
+        <img src="jcer.png" alt="JCER Logo" />
+        <img src="dlithe.png" alt="DLithe Logo" />
+        <img src="ieee.png" alt="IEEE Logo" />
+    </div>
+
+    <script>
+        const lampGrid = document.getElementById("lampGrid");
+        const message = document.getElementById("message");
+        const logos = document.getElementById("logos");
+        const title = document.getElementById("title");
+        const totalLamps = 28;
+        let litCount = 0;
+
+        const teams = [
+            "AgroVision", "Aura Negative", "CS Buddies", "CodeWave", "IoThinkers",
+            "Hack Tech", "Team NexTwin", "Verieco", "CodeHarvesters", "SkillShift",
+            "The Fabulous Four", "HashHustlers", "Shreya and Team", "AL-QASWA",
+            "Code Catalyst", "Techverse", "404 Not Found", "Agri-Nomics",
+            "Titans", "Task Force", "Innovengers", "LogicTech", "Team Nexus",
+            "Team AgriTech Innovators", "Doodles", "Tech Titans", "CodeX", "Team Verto"
+        ];
+
+        teams.forEach((team, i) => {
+            const lamp = document.createElement("div");
+            lamp.className = "lamp";
+            lamp.innerHTML = `
+        <div class="flame"></div>
+        <div class="base"></div>
+        <div class="team-label">#${i + 1}<br>${team}</div>
+      `;
+            lampGrid.appendChild(lamp);
+
+            lamp.addEventListener("click", () => {
+                const flame = lamp.querySelector(".flame");
+                if (!flame.classList.contains("glow")) {
+                    flame.classList.add("glow");
+                    litCount++;
+
+                    if (litCount === totalLamps) {
+                        document.body.classList.add("lit");
+                        message.classList.add("show");
+
+                        // Trigger confetti
+                        blastConfetti();
+
+                        setTimeout(() => {
+                            title.style.display = "none";
+                            message.style.display = "none";
+                            lampGrid.style.display = "none";
+                            logos.classList.add("show");
+                            blastConfetti();
+                            setTimeout(blastConfetti, 800);
+                        }, 2000);
+                    }
+                }
+            });
+        });
+
+        // 🎊 Confetti Blaster
+        function blastConfetti() {
+            for (let i = 0; i < 80; i++) {
+                const confetti = document.createElement("div");
+                confetti.classList.add("confetti");
+                confetti.style.setProperty("--x", (Math.random() - 0.5) * 800);
+                confetti.style.setProperty("--y", (Math.random() - 0.5) * 800);
+                confetti.style.background = randomColor();
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 2000);
+            }
+        }
+
+        function randomColor() {
+            const colors = ["#FFD700", "#FF4500", "#FF69B4", "#00FFFF", "#ADFF2F", "#FF6347"];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+    </script>
+</body>
+
+</html>
